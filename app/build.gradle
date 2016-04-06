@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
 
 dependencies {
     compile 'com.android.support:support-v13:23.1.1'
