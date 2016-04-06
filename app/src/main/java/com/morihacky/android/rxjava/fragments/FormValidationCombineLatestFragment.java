@@ -15,7 +15,6 @@ import com.morihacky.android.rxjava.RxUtils;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import rx.Observable;
-import rx.Observer;
 import rx.Subscription;
 
 import static android.text.TextUtils.isEmpty;
@@ -30,9 +29,9 @@ public class FormValidationCombineLatestFragment
     @Bind(R.id.demo_combl_password) EditText password;
     @Bind(R.id.demo_combl_num) EditText number;
 
-    private Observable<Boolean> validEmailObservable;
-    private Observable<Boolean> validPasswordObservable;
-    private Observable<Boolean> validNumberObservable;
+    private Observable<CharSequence> emailObservable;
+    private Observable<CharSequence> passwordObservable;
+    private Observable<CharSequence> numberObservable;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -41,19 +40,11 @@ public class FormValidationCombineLatestFragment
         View layout = inflater.inflate(R.layout.fragment_form_validation_comb_latest, container, false);
         ButterKnife.bind(this, layout);
 
-        validEmailObservable =
-            getObservableFromEditText(email)
-                .map(newEmail -> isEmailValid(newEmail));
+        emailObservable = getObservableFromEditText(email);
 
-        validPasswordObservable =
-            getObservableFromEditText(password)
-                .map(newPassword -> isPasswordValid(newPassword));
+        passwordObservable = getObservableFromEditText(password);
 
-        validNumberObservable =
-            getObservableFromEditText(number)
-                .map(newNumber -> isNumberValid(newNumber));
-
-        combineLatestEvents();
+        numberObservable = getObservableFromEditText(number);
 
         return layout;
     }
@@ -62,44 +53,6 @@ public class FormValidationCombineLatestFragment
     public void onDestroyView() {
         super.onDestroyView();
         ButterKnife.unbind(this);
-    }
-
-    private void combineLatestEvents() {
-        _subscription = Observable.combineLatest(
-                validEmailObservable,
-                validPasswordObservable,
-                validNumberObservable,
-                (emailValid, passwordValid, numberValid) -> {
-                    if (!emailValid) {
-                        email.setError("Invalid email!");
-                    }
-                    if (!passwordValid) {
-                        password.setError("Invalid password!");
-                    }
-                    if (!numberValid) {
-                        number.setError("Invalid number!");
-                    }
-                    return emailValid && passwordValid && numberValid;
-                })
-                .subscribe(new Observer<Boolean>() {
-                  @Override
-                  public void onCompleted() {
-                  }
-
-                  @Override
-                  public void onError(Throwable e) {
-                      e.printStackTrace();
-                  }
-
-                  @Override
-                  public void onNext(Boolean formValid) {
-                      if (formValid) {
-                          btnValidForm.setBackgroundColor(getResources().getColor(R.color.blue));
-                      } else {
-                          btnValidForm.setBackgroundColor(getResources().getColor(R.color.gray));
-                      }
-                  }
-              });
     }
 
     public boolean isNumberValid(CharSequence number) {
